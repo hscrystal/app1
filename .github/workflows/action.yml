@@ -65,7 +65,7 @@ jobs:
         with:
           namespace: default
           manifests: |
-            /manifests/*.*
+            /manifests/deployment.yaml
           images: |
             ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.REPO_NAME}}
 
