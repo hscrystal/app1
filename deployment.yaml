@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: app1
-        image: hscrystal/app1:4.0.0
+        image: hscrystal/app1:latest
         ports:
         - containerPort: 80
         startupProbe:
