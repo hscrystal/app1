@@ -15,7 +15,7 @@ spec:
       paths:
       - backend:
           service:
-            name: app1
+            name: app-svc
             port:
               number: 80
         path: /
