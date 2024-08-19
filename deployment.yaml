@@ -30,9 +30,9 @@ spec:
         image: hscrystal/app1:latest
         ports:
         - containerPort: 80
+        imagePullPolicy: Always
         startupProbe:
             tcpSocket:
               port: 80
             initialDelaySeconds: 20
             periodSeconds: 5
-      imagePullPolicy: Always
