@@ -56,8 +56,8 @@ jobs:
           token: ${{ secrets.GIT_TOKEN }}
       - name: modify the image tag
         run: |
-          git config user.email ${{ secrets.EMAIL }}
-          git config user.name ${{ secrets.GIT_USERNAME }}
+          git config user.email hscrystaleng@gmail.com
+          git config user.name hscrystaleng
           pwd
           cat deployment.yaml
           pwd
@@ -66,6 +66,3 @@ jobs:
           git add .
           git commit -m 'Done  by Github Actions Job change images tag'
           git push origin main
-          echo "-----------------------"
-          echo ${{ github.repository }}
-          
