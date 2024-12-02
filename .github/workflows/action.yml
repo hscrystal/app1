@@ -65,4 +65,4 @@ jobs:
           cat deployment.yaml
           git add .
           git commit -m 'Done  by Github Actions Job change images tag'
-          git push origin main
+          git push
