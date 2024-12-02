@@ -54,6 +54,7 @@ jobs:
         with:
           repository: ${{ secrets.GIT_REPO }}
           token: ${{ secrets.GIT_TOKEN }}
+          ref: main
       - name: modify the image tag
         run: |
           git config user.email hscrystaleng@gmail.com
