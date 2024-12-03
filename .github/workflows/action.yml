@@ -55,12 +55,18 @@ jobs:
           repository: ${{ secrets.GIT_REPO }}
           token: ${{ secrets.GIT_TOKEN }}
           ref: main
-      - name: modify the image tag
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Test
         run: |
-          git config user.email ${{ secrets.EMAIL }}
-          git config user.name ${{ secrets.GIT_USERNAME }}
-          sed -i "s+hscrystal/app1.*+hscrystal/app1:latest+g" manifest/deployment.yaml
-          cat manifest/deployment.yaml
-          git add .
-          git commit -m 'Done  by Github Actions Job change images tag'
-          git push
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      # - name: modify the image tag
+      #   run: |
+      #     git config user.email ${{ secrets.EMAIL }}
+      #     git config user.name ${{ secrets.GIT_USERNAME }}
+      #     sed -i "s+hscrystal/app1.*+hscrystal/app1:latest+g" manifest/deployment.yaml
+      #     cat manifest/deployment.yaml
+      #     git add .
+      #     git commit -m 'Done  by Github Actions Job change images tag'
+      #     git push
