@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: app1
-        image: hscrystal/app1:6.1.7
+        image: hscrystal/app1:6.1.8
         ports:
         - containerPort: 80
         imagePullPolicy: Always
