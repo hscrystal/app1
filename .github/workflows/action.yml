@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Docker meta
         id: meta
@@ -45,8 +44,24 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           
-  modifygit:
+  vulnerability:
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'docker.io/${{secrets.DOCKERHUB_USERNAME}}/${{secrets.REPO_NAME}}:$RELEASE_VERSION'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  modifygit:
+    needs: vulnerability
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
