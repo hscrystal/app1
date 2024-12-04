@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Docker meta
         id: meta
@@ -46,7 +46,7 @@ jobs:
           
   vulnerability:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: aquasecurity/trivy-action@0.28.0
         with:
@@ -59,7 +59,7 @@ jobs:
 
   modifygit:
     needs: vulnerability
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         name: Changing the deployment of git repo
