@@ -3,30 +3,24 @@ name: Docker Image CI
 on:
   push:
     tags:
-      - '*'
+      - 'v*' # แนะนำให้ใช้ v* เพื่อกรองเฉพาะ Version tags
   pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-24.04
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }} # ส่งออก Tag ไปใช้ต่อ
     steps:
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # list of Docker images to use as base name for tags
-          images: |
-            ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.REPO_NAME}}
-          #  ghcr.io/${{secrets.DOCKERHUB_USERNAME}}/${{secrets.REPO_NAME}}          
-          # generate Docker tags based on the following events/attributes
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.REPO_NAME }}
           tags: |
-            type=ref,event=branch
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+            type=sha,format=short
 
       - name: Login to Docker Hub
         if: github.event_name != 'pull_request'
@@ -34,9 +28,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -46,23 +37,23 @@ jobs:
           
   vulnerability:
     needs: build
+    if: github.event_name != 'pull_request' # รันเฉพาะตอน Push Tag จริงเท่านั้น
     runs-on: ubuntu-24.04
     steps:
-      - uses: aquasecurity/trivy-action@0.28.0
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: 'docker.io/${{secrets.DOCKERHUB_USERNAME}}/${{secrets.REPO_NAME}}:${{ github.ref_name }}'
+          image-ref: 'docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.REPO_NAME }}:${{ needs.build.outputs.image_tag }}'
           format: 'table'
           exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
   modifygit:
-    needs: vulnerability
+    needs: [build, vulnerability]
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-        name: Changing the deployment of git repo
         with:
           repository: ${{ secrets.GIT_REPO }}
           token: ${{ secrets.GIT_TOKEN }}
@@ -72,8 +63,8 @@ jobs:
         run: |
           git config user.email ${{ secrets.EMAIL }}
           git config user.name ${{ secrets.GIT_USERNAME }}
-          sed -i "s+hscrystal/app1.*+hscrystal/app1:${{ github.ref_name }}+g" manifest/deployment.yaml
-          cat manifest/deployment.yaml
+          # ใช้ตัวแปรเดียวกับที่ Build
+          sed -i "s|${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.REPO_NAME }}:.*|${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.REPO_NAME }}:${{ needs.build.outputs.image_tag }}|g" manifest/deployment.yaml
           git add .
-          git commit -m 'Done  by Github Actions Job change images tag ${{ github.ref_name }}'
+          git commit -m 'Update image to ${{ needs.build.outputs.image_tag }}'
           git push
