@@ -1,8 +1,5 @@
-FROM httpd:latest
+FROM httpd:alpine
 
-# อัปเดตรายการแพ็กเกจและอัปเกรด library ที่มีช่องโหว่
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk update && apk upgrade --no-cache
 
 COPY ./public-html/ /usr/local/apache2/htdocs/
